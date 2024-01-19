@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>启动</title>
+    <link rel="stylesheet" href="yshead.css">
+    
+</head>
+
+<body>
+    <header style="margin-top: 20px; width: 100%; height: 120px;">
+        <link rel="stylesheet" href="ysbody.css">
+        <div class="box-button" onclick="document.getElementById('main').style.transform=''">摇号</div>
+        <!-- 抽卡部分 -->
+        <span style="width: 1px;height: 1em;background-color: gray;"></span>
+        <!-- 分割线 -->
+        <div class="box-button" onclick="showHistory();document.getElementById('history').style.display=''">历史记录
+        <!-- 历史记录 -->
+        </div>
+        <!-- <div class="underline"></div> -->
+        <!-- 选项卡下划线 -->
+        <!-- <script>
+            let optionList = document.querySelectorAll(".option");
+            let underline = document.querySelector(".underline");
+            optionList[0].classList.add("select");
+            underline.style.left = `calc(${optionList[0].offsetLeft + "px"} - .7em)`;
+            underline.style.top = `calc(${optionList[0].offsetTop + optionList[0].offsetHeight + "px"} + 4px)`;
+            underline.style.width = `calc(${optionList[0].offsetWidth + "px"} + .3em)`;
+            
+
+            optionList.forEach((e) => {
+
+                e.addEventListener("mouseup", () => {
+                    document.querySelectorAll(".select").forEach(e => {
+                        e.classList.remove("select");
+                    })
+                    e.classList.add("select");
+                    underline.style.left = `calc(${e.offsetLeft + "px"} - .7em)`;
+                    underline.style.top = `calc(${e.offsetTop + e.offsetHeight + "px"} + 4px)`;
+                    underline.style.width = `calc(${e.offsetWidth + "px"} + .3em)`;
+
+                })
+            })
+
+
+        </script> -->
+    </header>
+    <main style="display: flex;width: 200vw;overflow-x:visible;transition: transform ease-in-out .5s;" id="main">
+        <div style="width: 100vw; height: 100vh;" class="wish-style">
+            <div id="box">
+                <div>
+                    <label for="n">人数：</label>
+                    <input type="number" id="n" min="1" step="1" value="1">
+                    <button style="width: 1em;"
+                        onclick="if(document.getElementById('n').value*1>document.getElementById('n').min*1)document.getElementById('n').value =document.getElementById('n').value*1-document.getElementById('n').step*1">-</button>
+                    <button style="width: 1em;"
+                        onclick="if(document.getElementById('n').value*1<document.getElementById('n').max*1)document.getElementById('n').value =document.getElementById('n').value*1+document.getElementById('n').step*1">+</button>
+                </div>
+                <div id="out" style="font-size: 1em;"></div>
+                <div>
+                    <button onclick="ran()"
+                        style="padding: .2em;border-radius: .2em;;box-sizing: border-box;font-size: .9em;">摇号</button>
+                </div>
+                <!-- 抽卡按钮 -->
+
+                <input type="checkbox" id="isanimation" checked style="height: 0px;">
+                <!-- <label for="isanimation" >是否开启动画</label> -->
+                <br>
+                <input type="checkbox" id="isuse" style="height: 0px;">
+                <!-- <label for="isuse">是否使用保底</label> -->
+            </div>
+            <!-- <a href="file:///D:/game/index.html"
+                !style="font-size: 24px;color: rgb(182, 182, 182);text-decoration: none;">诶嘿</a> -- -->
+
+
+
+            <video id="video" style="position: fixed;display: none;left: 0;top: 0;width: 100vw;"
+                onclick="document.getElementById('out').style.display='';document.getElementById('video').pause();document.getElementById('video').style.display='none';"
+                onended="document.getElementById('out').style.display='';document.getElementById('video').style.display='none'"
+                src="./5starwish-single.mp4">
+            </video>
+        </div>
+        <div id="history" style="overflow-x: scroll;width: 100vw;height: 100vh;" class="history-style">
+            <div style="font-size: 0px;margin:0 auto;" id="lastList"></div>
+            <br>
+            <br>
+            <table border="1" id="historyList" style="font-size: 14px;margin:0 auto;">
+                <tr>
+                    <th style="width: 200px;">名字</th>
+                    <th style="width: 800px;">时间</th>
+                    <th style="width: 400px;">是否开启保底</th>
+                </tr>
+
+            </table>
+            <div style="line-height: 70px;">
+                <button onclick="document.getElementById('page').value=document.getElementById('page').value*1-1;showHistory()" style="height: 70px;">＜</button>
+                <input type="number" onchange="showHistory()" id="page" min="1" value="1" style="width:2em; height: 60px;">
+                <button onclick="document.getElementById('page').value=document.getElementById('page').value*1+1;showHistory()" style="height: 70px;">＞</button>
+            </div>
+        </div>
+        <script>
+            let listAll = JSON.stringify([
+                //全班
+                "A",
+                "B",
+                "C"
+
+
+
+            ]);
+            //开启抽卡动画后以下代码参与运算
+            let quaily = {
+                five: [
+                    "A"
+                    //金
+
+
+                ],
+                four: [
+                    "B"
+                    //紫
+
+
+                ],
+                three: [
+                    "C"
+                    //蓝
+
+                ]
+            }
+
+            function history(v) {
+                let his = [];
+                if (localStorage.getItem("history") !== null &&
+                    localStorage.getItem("history") !== "") {
+                    his = JSON.parse(localStorage.getItem("history"));
+                }
+                if (his.length > 500) {
+                    his.splice(499, 1000);
+                }
+
+                his.unshift({
+                    value: v,
+                    date: new Date().toString(),
+                    isUsed: document.getElementById("isuse").checked
+                })
+                localStorage.setItem("history", JSON.stringify(his));
+            }
+
+            function showHistory() {
+                if (localStorage.getItem("history") !== null &&
+                    localStorage.getItem("history") !== "") {
+                    document.getElementById("lastList").innerHTML = JSON.parse(localStorage.getItem("list"))
+                    let list = JSON.parse(localStorage.getItem("history"));
+                    document.getElementById("historyList").innerHTML = '<tr><th style="width: 400px;">名字</th><th style="width: 400px;">时间</th><th style="width: 400px;">是否开启保底</th></tr>';
+
+                    let showNumber = 8
+                    let page = document.getElementById("page").value * 1;
+                    if (page - 1 > list.length / showNumber) {
+                        document.getElementById("page").value = Math.floor(list.length / showNumber) + 1;
+                    } else if (page < 1) document.getElementById("page").value = 1
+                    document.getElementById("page").max = Math.floor(list.length / showNumber) + 1
+                    page = document.getElementById("page").value * 1;
+
+                    for (let i = (page - 1) * showNumber; i < page * showNumber; i++) {
+                        if (i > list.length) break;
+                        const obj = list[i];
+                        let td = document.createElement("tr");
+                        td.innerHTML = `<th>${obj.value}</th><th>${obj.date}</th><th>${(() => {
+                            if (obj.isUsed === false) {
+                                return "否"
+                            } else {
+                                return "是"
+                            }
+                        })()}</th>`;
+                        document.getElementById("historyList").append(td);
+                        document.getElementById("main").style.transform = "translateX(-100vw)";
+
+                    }
+                }
+            }
+
+            if (localStorage.getItem("list") === null) {
+                localStorage.setItem("list", listAll)
+            }
+            document.getElementById('n').max = JSON.parse(listAll).length;
+
+
+            function ran() {
+                if (JSON.parse(localStorage.getItem("list")).length === 0) {
+                    localStorage.setItem("list", listAll);
+                }
+                if (localStorage.getItem("list") === null) {
+                    localStorage.setItem("list", listAll)
+                }
+                if (document.getElementById("isuse").checked === false) {
+
+                    let list = JSON.parse(listAll);
+                    let o = []
+                    for (let i = 0; i < document.getElementById("n").value * 1; i++) {
+                        if (list.length === 0) {
+                            list = JSON.parse(listAll);
+                        }
+                        let random = Math.floor(Math.random() * list.length);
+                        o.push(list[random]);
+                        list.splice(random, 1);
+                    }
+
+                    document.getElementById("out").innerHTML = ""
+                    if (document.getElementById("isanimation").checked === false) {
+                        for (const k in o) {
+                            if (o.hasOwnProperty(k)) {
+                                const element = o[k];
+                                const div = document.createElement("div")
+                                div.innerHTML = element;
+                                history(element);
+                                document.getElementById("out").append(div)
+                            }
+                        }
+                    } else if (document.getElementById("isanimation").checked) {
+                        let animationType = "3";
+                        for (const k in o) {
+                            if (o.hasOwnProperty(k)) {
+                                const element = o[k];
+                                const div = document.createElement("div")
+                                div.innerHTML = element;
+                                history(element);
+
+
+                                for (const key in quaily.three) {
+                                    if (quaily.three.hasOwnProperty(key)) {
+                                        const e = quaily.three[key];
+                                        if (element === e) {
+                                            div.classList.add("three")
+                                        }
+                                    }
+                                }
+
+                                for (const key in quaily.four) {
+                                    if (quaily.four.hasOwnProperty(key)) {
+                                        const e = quaily.four[key];
+                                        if (element === e) {
+                                            if (animationType * 1 < 4) animationType = "4";
+                                            div.classList.add("four")
+                                        }
+                                    }
+                                }
+
+                                for (const key in quaily.five) {
+                                    if (quaily.five.hasOwnProperty(key)) {
+                                        const e = quaily.five[key];
+                                        if (element === e) {
+                                            if (animationType * 1 < 5) animationType = "5";
+                                            div.classList.add("five")
+                                        }
+                                    }
+                                }
+                                document.getElementById("out").append(div)
+                            }
+
+                        }
+                        let video = document.getElementById("video");
+                        video.src = `./${animationType}starwish-single.mp4`
+                        video.style.display = ""
+                        video.play()
+                        document.getElementById("out").style.display = "none"
+                    }
+                } else if (document.getElementById("isuse").checked) {
+                    let list = JSON.parse(localStorage.getItem("list"));
+                    let o = []
+                    for (let i = 0; i < document.getElementById("n").value * 1; i++) {
+                        if (list.length === 0) {
+                            list = JSON.parse(listAll);
+                        }
+                        let random = Math.floor(Math.random() * list.length);
+                        o.push(list[random]);
+                        list.splice(random, 1);
+                    }
+                    localStorage.setItem("list", JSON.stringify(list));
+
+                    document.getElementById("out").innerHTML = ""
+
+
+                    if (document.getElementById("isanimation").checked === false) {
+                        for (const k in o) {
+                            if (o.hasOwnProperty(k)) {
+                                const element = o[k];
+                                const div = document.createElement("div")
+                                div.innerHTML = element;
+                                history(element);
+
+                                document.getElementById("out").append(div)
+                            }
+                        }
+                    } else if (document.getElementById("isanimation").checked) {
+                        let animationType = "3";
+
+                        for (const k in o) {
+                            if (o.hasOwnProperty(k)) {
+                                const element = o[k];
+                                const div = document.createElement("div")
+                                div.innerHTML = element;
+                                history(element);
+
+
+                                for (const key in quaily.three) {
+                                    if (quaily.three.hasOwnProperty(key)) {
+                                        const e = quaily.three[key];
+                                        if (element === e) {
+                                            div.classList.add("three")
+                                        }
+                                    }
+                                }
+
+                                for (const key in quaily.four) {
+                                    if (quaily.four.hasOwnProperty(key)) {
+                                        const e = quaily.four[key];
+                                        if (element === e) {
+                                            if (animationType * 1 < 4) animationType = "4";
+                                            div.classList.add("four")
+                                        }
+                                    }
+                                }
+
+                                for (const key in quaily.five) {
+                                    if (quaily.five.hasOwnProperty(key)) {
+                                        const e = quaily.five[key];
+                                        if (element === e) {
+                                            if (animationType * 1 < 5) animationType = "5";
+                                            div.classList.add("five")
+                                        }
+                                    }
+                                }
+                                document.getElementById("out").append(div)
+                            }
+
+                        }
+                        let video = document.getElementById("video");
+                        video.src = `./${animationType}starwish-single.mp4`
+                        video.style.display = ""
+                        video.play()
+                        document.getElementById("out").style.display = "none"
+                    }
+                }
+            }
+        </script>
+    </main>
+</body>
+
+</html>
